@@ -9,7 +9,6 @@ from GitHubApiControl import *
 from tkinter import filedialog, messagebox, ttk
 # URL of the Git repository
 #repo_url = 'https://github.com/vim/vim.git'
-
 repoList = []
 reposCommitsList = []
 lAlt = []
@@ -300,6 +299,10 @@ def getCommitLOCsOffline(commitString, repoName, oneFileOnly = False, targetFile
 
   return [commitChangeLocsDict,commitDeletionsLocsDict,commitInsertionsLocsDict]
 
+
+
+
+
 def finalDownloadOffline(cveID, commitString, fileArrCommitString, repoName , bugDescInput, patchDescInput, usePostFolder = False):
     """Download all files from a selected commit
 
@@ -324,7 +327,7 @@ def finalDownloadOffline(cveID, commitString, fileArrCommitString, repoName , bu
      preFolderDir = makeOrTakePre_Folder(cveID)
      postFolderDir = makeOrTakePost_Folder(cveID)
      # commit hash, be it previous or current, helps catch die LOC changes
-     commitHash = commitString.split(" ", 1)[0]
+     commitHash = commitString.split(" ", 1)[0]  # if usePostFolder == True else combobox_updater.get_combobox_values()[ combobox_updater.get_commit_indexes()[0]]
     # this commit hash is the current one that gives away the correct list of commit files, no list for the previous one's files
      fileArrCommitHash =  fileArrCommitString.split(" ", 1)[0]
      fileArray = showChangedFiles(fileArrCommitHash )
@@ -340,7 +343,7 @@ def finalDownloadOffline(cveID, commitString, fileArrCommitString, repoName , bu
      if(usePostFolder == True):
       commitLineChangesData = getCommitLOCsOffline(commitHash, repoName)[0]
       commitJsonData = buildJSONData(cveID,bugDescInput,patchDescInput,commitLineChangesData)
-      createOrModCVE_JSON(cveID, commitJsonData)
+      createOrModCveJSON(cveID, commitJsonData)
     # for loop has commit files download in the respected folder(pre-/post-patch) dependent on version
      for file in fileArray:
           copyFileToDir(repoName + '\\' + file.replace('/','\\')  , targetDir)

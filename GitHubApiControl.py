@@ -12,81 +12,12 @@ import json
 
 cwd = os.getcwd()
 
+Token = ''
+file_path = os.path.join(cwd, 'token'  + ".txt")
+if os.path.exists(file_path):
+ token_file = open(file_path, 'r')
+ Token = token_file.read()
 
-def saveTokenInFile(token): 
-    """Creates file with a GitHub token 
-
-    Args:
-         token(string): GitHub token to authencicate ghapi operations
-
-    Returns:
-        None
-    """
-    try:
-        file_path = os.path.join(cwd, 'token'  + ".json")
-        if not os.path.exists(file_path):
-         with open(file_path, "x") as file:
-             data= {'token': token}
-             json.dump(data, file, ensure_ascii=False, indent=4)
-        if os.path.exists(file_path):
-         with open(file_path, "w") as file:
-             data= {'token': token}
-             json.dump(data, file, ensure_ascii=False, indent=4)
-             return tokenContent['token']
-    except Exception as e:
-        print(f"Error: {e}")
-
-def returnTokenFromFile():
-    """Creates file with a GitHub token 
-
-    Args:
-        None
-
-    Returns:
-         token(string): GitHub token to authencicate ghapi operations
-    """
-    directory = cwd + "\\" +  'token.json'
-    if os.path.exists(directory):
-        with open(directory, 'r') as file:
-         tokenContent = file.read()
-         tokenJsonToData = json.loads(tokenContent)
-         return tokenJsonToData['token']
-
-
-
-class TokenUpdater:
-    def __init__(self):
-        self.token = github_token()
-        self.directory = cwd + "\\" +  'token.json'
-    def setToken(self,token):
-     """Sets token in a connected file
-       Args:
-       self: class instance
-       token(string): GitHub token for auths
-        
-
-      Returns:
-       None
-    """
-     saveTokenInFile(token)
-
-    def getToken(self):
-      """Gets token in a connected file
-
-      Args:
-      None
-        
-
-      Returns:
-      self.token(string):  GitHub token for auths
-      """
-      self.token =  returnTokenFromFile() if os.path.exists(self.directory) else github_token()
-      return self.token
-
-tokenUpdater = TokenUpdater()       
-
-currentToken =    tokenUpdater.getToken()   or github_token()
-api = GhApi(token=currentToken)
 
 def prepareFileCommitsOutput(owner,repoName,commitHash):
  """Prepares the download of all CVE-relevant data (commit changes, all pre- and post-patch files) for comparing the pre- and post-patch states to track the patches' applications
@@ -100,9 +31,9 @@ def prepareFileCommitsOutput(owner,repoName,commitHash):
     Returns:
         [dyn_download_url_prefix ,dyn_output,dyn_commit_groups,dyn_commit_groups_box, dyn_commit_info, dyn_prev_commit_hash, dyn_commit_url](list): contains file download URL prefix by commit, all LOC changes for all files of a commit, the current and previous commit hash each
  """
- api = GhApi(token=tokenUpdater.getToken())
+ api = GhApi(token= Token)
  # replace string enterTokenHere with the actual token, token recognition will be fixed later on.
- dyn_commit_info =  api.git.get_commit(owner=owner, repo=repoName, commit_sha=commitHash, token='enterTokenHere');
+ dyn_commit_info =  api.git.get_commit(owner=owner, repo=repoName, commit_sha=commitHash, token=Token);
  dyn_commit_url = dyn_commit_info['html_url']
  dyn_prev_commit_hash = (dyn_commit_info['parents'][0]['html_url']).rsplit('/')[-1]
  # raw.githubusercontent.com URLs contain the actual raw file contents
@@ -361,15 +292,22 @@ def createOrModCveJSONOnline(cveID, data):
     directory = cwd + "\\" + 'CVEs' + "\\" + cveID
     try:
         if not os.path.exists(directory):
-            os.makedirs(directory)
-        
+         os.makedirs(directory)
+
         file_path = os.path.join(directory, cveID + ".json")
-        if not os.path.exists(file_path):
-         with open(file_path, "x") as file:
+        fileStat = "w" if os.path.exists(file_path) else "x"
+        with open(file_path, fileStat) as file:
             json.dump(data, file, ensure_ascii=False, indent=4)
-        if  os.path.exists(file_path):
-         with open(file_path, "w") as file:
-            json.dump(data, file, ensure_ascii=False, indent=4)    
+        #if not os.path.exists(directory):
+        #    os.makedirs(directory)
+        
+        #file_path = os.path.join(directory, cveID + ".json")
+        #if not os.path.exists(file_path):
+        # with open(file_path, "x") as file:
+        #    json.dump(data, file, ensure_ascii=False, indent=4)
+        #if  os.path.exists(file_path):
+        # with open(file_path, "w") as file:
+        #    json.dump(data, file, ensure_ascii=False, indent=4)    
     except Exception as e:
         print(f"Error: {e}")
 
@@ -411,10 +349,10 @@ def finalDownloadOnline(cveID, ownerName,repoName,commitString, fileArrCommitStr
      fileArray = getCommitFilesViaUrl(ownerName,repoName, fileArrCommitHash)
         
     #save all LOC changes in a JSON
-     if(usePostFolder == True):
-      commitLineChangesData = getCommitLOCsOnline(ownerName,repoName, fileArrCommitHash)[0]
-      commitJsonData = buildJSONDataOnline(cveID,bugDescInput,patchDescInput,commitLineChangesData)
-      createOrModCveJSONOnline(cveID, commitJsonData)
+    if(usePostFolder):
+     commitLineChangesData = getCommitLOCsOnline(ownerName,repoName, fileArrCommitHash)[0]
+     commitJsonData = buildJSONDataOnline(cveID,bugDescInput,patchDescInput,commitLineChangesData)
+     createOrModCveJSONOnline(cveID, commitJsonData)
       
 # for loop has commit files download in the respected folder(pre-/post-patch) dependent on version
      for file in fileArray:

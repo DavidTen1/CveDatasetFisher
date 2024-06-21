@@ -151,7 +151,7 @@ def buildJSONData(cveID,bugDescInput,patchDescInput, changedLinesData):
      }
     return cveJSONData
 
-def createOrModCVE_JSON(cveID, data): #CGPT
+def createOrModCveJSON(cveID, data):
     """Creates file with all commit info (LOC changes by file)
 
     Args:
@@ -159,20 +159,27 @@ def createOrModCVE_JSON(cveID, data): #CGPT
         data(object): LOC changes and commit data
 
     Returns:
-        cveJSONData(object): registers all inserted, modified or deleted lines in given codes, along with CVE ID and descriptions of bugs as well as of patches.
+        None
     """
     directory = cwd + "\\" + 'CVEs' + "\\" + cveID
     try:
         if not os.path.exists(directory):
-            os.makedirs(directory)
-        
+         os.makedirs(directory)
+
         file_path = os.path.join(directory, cveID + ".json")
-        if not os.path.exists(file_path):
-         with open(file_path, "x") as file:
+        fileStat = "w" if os.path.exists(file_path) else "x"
+        with open(file_path, fileStat) as file:
             json.dump(data, file, ensure_ascii=False, indent=4)
-        if os.path.exists(file_path):
-         with open(file_path, "w") as file:
-            json.dump(data, file, ensure_ascii=False, indent=4)
+        #if not os.path.exists(directory):
+        #    os.makedirs(directory)
+        
+        #file_path = os.path.join(directory, cveID + ".json")
+        #if not os.path.exists(file_path):
+        # with open(file_path, "x") as file:
+        #    json.dump(data, file, ensure_ascii=False, indent=4)
+        #if  os.path.exists(file_path):
+        # with open(file_path, "w") as file:
+        #    json.dump(data, file, ensure_ascii=False, indent=4)    
     except Exception as e:
         print(f"Error: {e}")
 
