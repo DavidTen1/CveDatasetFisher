@@ -16,4 +16,10 @@ Linux:
 Installing required external libraries: 
 1. Install the libraries GitPython, ghapi, requests and fastcore each with the CMD command:
 py -m pip install <libraryName>(Windows) or  python -m pip install <libraryName>(Linux)
+2.If you do see an error message while installing a package, search it for the names of packages that are reported to be missing. install them according to the 1st step. Then retry installing the packages
+
+How to launch:
 To launch the CveDatasetFisher application, run the epynomous Python file.
+
+
+Any questions? Gladly ask!
