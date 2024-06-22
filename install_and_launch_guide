@@ -1,0 +1,19 @@
+Installing Python
+Windows:
+1. Download the latest Python package using https://www.python.org/downloads/
+2. Launch the installer and follow the instructions
+3. After installing, check if your system recognizes Python, depending on your build, launch the command "py --version" or "python --version"
+
+Linux:
+1. Enter "sudo apt update" in the terminal
+2. Enter "sudo apt upgrade" in the terminal
+3. Enter "sudo apt install software-properties-common -y" in the terminal
+4. Enter "sudo add-apt-repository ppa:deadsnakes/ppa" in the terminal
+5. Enter "sudo apt update" in the terminal
+6. Enter sudo apt "install python(version number)" in the terminal
+7. Check the version with "python(version number)--version" in the terminal
+
+Installing required external libraries: 
+1. Install the libraries GitPython, ghapi, requests and fastcore each with the CMD command:
+py -m pip install <libraryName>(Windows) or  python -m pip install <libraryName>(Linux)
+To launch the CveDatasetFisher application, run the epynomous Python file.
