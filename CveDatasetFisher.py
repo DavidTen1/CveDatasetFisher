@@ -251,6 +251,8 @@ def search(event): #GFG
             cvesLb['values'] = cvesList
         if str(event.widget) == '.repo':
             reposLb['values'] = repoList
+        if str(event.widget) ==  '.cveDownloads':
+            cvesDownloadListLb['values'] = cveDownloadListCombobox['values']
     else:
         data = []
         if str(event.widget) == '.commit':
@@ -279,6 +281,13 @@ def search(event): #GFG
                      #print('ccc',data)
              if str(event.widget) == '.repo':
                 reposLb['values'] = data
+        if str(event.widget) == '.cveDownloads':
+             for item in cveDownloadListCombobox['values']: 
+                 if value.lower() in item.lower(): 
+                     data.append(item)
+                     #print('ccc',data)
+             if str(event.widget) == '.cveDownloads':
+               cvesDownloadListLb['values'] = data         
 
 
 
@@ -419,8 +428,8 @@ commitsLb = commitCombobox
 commitsLb.bind('<KeyRelease>',search)
 
 cveDownloadListCombobox.grid(row=3, column=1)
-cvesLb = cveDownloadListCombobox
-cvesLb.bind('<KeyRelease>',search)
+cvesDownloadListLb = cveDownloadListCombobox
+cvesDownloadListLb.bind('<KeyRelease>',search)
 
 repoCombobox.grid(row=0, column = 10)
 reposLb = repoCombobox
