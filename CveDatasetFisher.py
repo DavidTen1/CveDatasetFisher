@@ -13,7 +13,7 @@ style.configure('Custom.TEntry', readonlybackground='#FFFFFF')# readonly backgro
 
 #window size
 master.geometry("750x350")
-master.title('Dataset Creator')
+master.title('CveDatasetFisher')
 
 
 
@@ -205,32 +205,34 @@ def removeItems():
          json.dump(cveDownloadListCombobox['values'], file, ensure_ascii=False, indent=4)
 
                  
-#combobox_updater.get_combobox_values()[ combobox_updater.get_commit_indexes()[0]]
+#combobox_updater.get_combobox_values()[ combobox_updatr.get_commit_indexes()[0]]
 
 def downloadSavedCves():
     prevCommitHash = ''
     for entry in cveDownloadListCombobox['values']:
-         #print('cnty ', entry)
-         parsedEntry = json.loads(entry.replace("'", '"'))
+         #print('cnty',entry, type(entry))
+         jsonEntry = entry.replace("'",'"')
+         #print('cnty',jsonEntry, type(jsonEntry))
+         parsedEntry = json.loads(jsonEntry)
+         #print('cnty ', parsedEntry, type(parsedEntry), 'Owner' not in parsedEntry.keys())
          if 'Owner' not in parsedEntry.keys():
-
-             currentRepo = parsedEntry['Repo']
-             currentCommit = parsedEntry['Commit']
-             currentRepoCommitList = get_value_by_key(reposCommitsList, parsedEntry['Repo'])
-             prevValIndex = 0
-             currentValIndex = 0
-             for i in range(len(currentRepoCommitList)):
-             
-              if currentCommit in currentRepoCommitList[i] or currentRepoCommitList[i].split(" ", 1)[0] in currentCommit:
+          currentRepo = parsedEntry['Repo']
+          currentCommit = parsedEntry['Commit']
+          repoUpdater.setRepo(currentRepo)
+          currentRepoCommitList = get_value_by_key(reposCommitsList, parsedEntry['Repo'])
+          prevValIndex = 0
+          currentValIndex = 0
+          for i in range(len(currentRepoCommitList)):
+             if currentCommit in currentRepoCommitList[i] or currentRepoCommitList[i].split(" ", 1)[0] in currentCommit:
                 prevValIndex = i + 1
                 currentValIndex = i
                 prevCommitHash = currentRepoCommitList[prevValIndex].split(" ", 1)[0]
                 break
+
+          finalDownloadOffline(parsedEntry['CVE'], prevCommitHash, parsedEntry['Commit'], parsedEntry['Repo'],parsedEntry['Bug'],parsedEntry['Patch'])
+          finalDownloadOffline(parsedEntry['CVE'], parsedEntry['Commit'], parsedEntry['Commit'], parsedEntry['Repo'],parsedEntry['Bug'],parsedEntry['Patch'], True)
          
-         repoUpdater.setRepo(currentRepo)
-         finalDownloadOffline(parsedEntry['CVE'], prevCommitHash, parsedEntry['Commit'], parsedEntry['Repo'],parsedEntry['Bug'],parsedEntry['Patch'])
-         finalDownloadOffline(parsedEntry['CVE'], parsedEntry['Commit'], parsedEntry['Commit'], parsedEntry['Repo'],parsedEntry['Bug'],parsedEntry['Patch'], True)   
-         if  'Owner' in parsedEntry.keys():
+         if 'Owner' in parsedEntry.keys():
             finalDownloadOnline(parsedEntry['CVE'], parsedEntry['Owner'], parsedEntry['Repo'], parsedEntry['Commit'], parsedEntry['Commit'], parsedEntry['Bug'], parsedEntry['Patch'])
             finalDownloadOnline(parsedEntry['CVE'], parsedEntry['Owner'], parsedEntry['Repo'], parsedEntry['Commit'], parsedEntry['Commit'], parsedEntry['Bug'], parsedEntry['Patch'], True)
         

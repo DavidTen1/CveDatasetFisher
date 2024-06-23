@@ -355,7 +355,7 @@ def finalDownloadOnline(cveID, ownerName,repoName,commitString, fileArrCommitStr
      createOrModCveJSONOnline(cveID, commitJsonData)
       
 # for loop has commit files download in the respected folder(pre-/post-patch) dependent on version
-     for file in fileArray:
+    for file in fileArray:
          fileURL = downloadURLOnline(ownerName,repoName,commitHash,file)
          fileName = fileURL.rsplit('/')[-1]
          req = requests.get(fileURL, allow_redirects=True)
