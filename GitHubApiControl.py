@@ -191,7 +191,7 @@ def getCommitLOCsOnline(owner,repoName,commitHash, oneFileOnly = False, targetFi
       deleteArray = []
       insertArray = []
       # save all deleted LOCs
-      for i in range(len(group) -1 ):
+      for i in range(len(group)):
           if (i > 0 and oneFileOnly == False ) or (i > 0 and oneFileOnly ==  ( targetFileName in commit_files )):
               deleteLocNumber = deleteLocNumber + 1
               if(group[i][0] == '-' and group[i] is not None and group[i][0] != '' and group[i][1] != '-'):
@@ -316,7 +316,7 @@ def createOrModCveJSONOnline(cveID, data):
         
                           
 def finalDownloadOnline(cveID, ownerName,repoName,commitString, fileArrCommitString, bugDescInput,patchDescInput, usePostFolder = False):
-    """Download all files from a selected commit
+   """Download all files from a selected commit
 
     Args:
         cveID(string): an ID number for a CVE, which is included in the CVE's root folder
@@ -330,38 +330,36 @@ def finalDownloadOnline(cveID, ownerName,repoName,commitString, fileArrCommitStr
 
     Returns:
        None
-    """
-    if re.match(r'\d+-\d+', cveID):
-     makeOrIdCVEFolderOnline(cveID)
-     makeOrTakePreFolderOnline(cveID)
-     makeOrTakePostFolderOnline(cveID)
+   """
+   if re.match(r'\d+-\d+', cveID):
+    makeOrIdCVEFolderOnline(cveID)
+    makeOrTakePreFolderOnline(cveID)
+    makeOrTakePostFolderOnline(cveID)
     
-     prevCommitString = prepareFileCommitsOutput(ownerName, repoName, commitString)[5]
+    prevCommitString = prepareFileCommitsOutput(ownerName, repoName, commitString)[5]
     # commit hash, be it previous or current, helps catch die LOC changes
-     commitHash = commitString.split(" ", 1)[0] if usePostFolder == True else prevCommitString.split(" ", 1)[0]
+    commitHash = commitString.split(" ", 1)[0] if usePostFolder == True else prevCommitString.split(" ", 1)[0]
     # this commit hash is the current one that gives away the correct list of commit files, no list for the previous one's files
     #hash at start of commit title,lies before 1st space and gets fetched
-     fileArrCommitHash =  fileArrCommitString.split(" ", 1)[0]
-     cveFolderDir = makeOrIdCVEFolderOnline(cveID)
-     preFolderDir = makeOrTakePreFolderOnline(cveID)
-     postFolderDir = makeOrTakePostFolderOnline(cveID)
-     targetDir = postFolderDir if usePostFolder == True else preFolderDir
-     fileArray = getCommitFilesViaUrl(ownerName,repoName, fileArrCommitHash)
-        
+    fileArrCommitHash =  fileArrCommitString.split(" ", 1)[0]
+    cveFolderDir = makeOrIdCVEFolderOnline(cveID)
+    preFolderDir = makeOrTakePreFolderOnline(cveID)
+    postFolderDir = makeOrTakePostFolderOnline(cveID)
+    targetDir = postFolderDir if usePostFolder == True else preFolderDir
+    fileArray = getCommitFilesViaUrl(ownerName,repoName, fileArrCommitHash) 
     #save all LOC changes in a JSON
     if(usePostFolder):
-     commitLineChangesData = getCommitLOCsOnline(ownerName,repoName, fileArrCommitHash)[0]
-     commitJsonData = buildJSONDataOnline(cveID,bugDescInput,patchDescInput,commitLineChangesData)
-     createOrModCveJSONOnline(cveID, commitJsonData)
-      
-# for loop has commit files download in the respected folder(pre-/post-patch) dependent on version
-    for file in fileArray:
+      commitLineChangesData = getCommitLOCsOnline(ownerName,repoName, fileArrCommitHash)[0]
+      commitJsonData = buildJSONDataOnline(cveID,bugDescInput,patchDescInput,commitLineChangesData)
+      createOrModCveJSONOnline(cveID, commitJsonData)
+    # for loop has commit files download in the respected folder(pre-/post-patch) dependent on version
+   for file in fileArray:
          fileURL = downloadURLOnline(ownerName,repoName,commitHash,file)
          fileName = fileURL.rsplit('/')[-1]
          req = requests.get(fileURL, allow_redirects=True)
          open( targetDir + '\\' + fileName, 'wb').write(req.content)
         
-    else:
+   else:
         print('CVE ID not valid, only digits with a hyphen between them accepted')
 
 
