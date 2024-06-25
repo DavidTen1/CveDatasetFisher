@@ -274,24 +274,36 @@ def getCommitLOCsOffline(commitString, repoName, oneFileOnly = False, targetFile
   commitChangeLocsPack = []
   for file in commit_files:
       arrayGroup = showOnlyChangedLines(commitString,file, repoName)
-      group = arrayGroup[0].split('\n')
+      #group = arrayGroup[0].split('\n')
+      group = ''.join(arrayGroup).split('\n')
+      #print('gr', group)
       # indexes of deleted/inserted lines
-      deleteLocNumber =int ( (re.findall(r'\d+', group[0]))[0])
-      insertLocNumber = int ((re.findall(r'\d+', group[0]))[1])
+      #print('gr', deleteLocNumber, insertLocNumber, group)
+      #print('id',re.findall(r'\d+', group[0]))
+      deleteLocNumber =int ((re.findall(r'\d+', group[0]))[0])
+      insertIndex =  2 if len(re.findall(r'\d+', group[0])) > 2 else 1
+      insertLocNumber = int ((re.findall(r'\d+', group[0]))[insertIndex])
+      #print('id', deleteLocNumber, insertLocNumber)
       deleteArray = []
       insertArray = []
       # save all deleted LOCs
       for i in range(len(group) ):
+          deleteNums = re.findall(r'[+-]?\d*\.?\d+', group[i])
+          #print('dd',deleteNums)
           if (i > 0 and oneFileOnly == False ) or (i > 0 and oneFileOnly ==  ( targetFileName in commit_files )):
-              deleteLocNumber = deleteLocNumber + 1
-              if(group[i][0] == '-' and group[i] is not None and group[i][0] != '' and group[i][1] != '-'):
-               deleteArray.append([deleteLocNumber,group[i]])
+              deleteLocNumber = int(deleteNums[0]) if len(deleteNums) == 4 else  deleteLocNumber + 1
+              if (group[i] is not None and len(group[i]) > 1 and group[i][0] == '-' and group[i][1] != ''):
+               deleteArray.append([deleteLocNumber - 1,group[i]])
       # save all inserted LOCs
       for j in range(len(group)):
+          insertNums = re.findall(r'[+-]?\d*\.?\d+', group[j])
+          #print('ii',insertNums)
+          insertLocNumber  = int(insertNums[2]) if len(insertNums) == 4 else  insertLocNumber + 1
+          #print('in',insertLocNumber)
           if (j > 0 and oneFileOnly == False ) or (j > 0 and oneFileOnly ==  ( targetFileName in commit_files )):
-               insertLocNumber = insertLocNumber + 1
-               if(group[j][0] == '+' and group[j] is not None and group[j][0] != '' and group[j][1] != '+'):
-                insertArray.append([insertLocNumber,group[j]])
+               #print('in',insertLocNumber)
+               if (group[j] is not None and len(group[j]) > 1 and group[j][0] == '+' and group[j][1] != ''):
+                insertArray.append([insertLocNumber - 1 ,group[j]])
 
       commitChangeLocsDict[file] = ([{'deletedLines':deleteArray,'insertedLines':insertArray}])
       commitDeletionsLocsDict[file] = ([deleteArray])

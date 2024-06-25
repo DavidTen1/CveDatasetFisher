@@ -32,6 +32,10 @@ def prepareFileCommitsOutput(owner,repoName,commitHash):
         [dyn_download_url_prefix ,dyn_output,dyn_commit_groups,dyn_commit_groups_box, dyn_commit_info, dyn_prev_commit_hash, dyn_commit_url](list): contains file download URL prefix by commit, all LOC changes for all files of a commit, the current and previous commit hash each
  """
  api = GhApi(token= Token)
+ user = api.users.get_authenticated()
+ #print(user)
+ rate_limit = api.rate_limit.get()
+ #print(rate_limit)
  # replace string enterTokenHere with the actual token, token recognition will be fixed later on.
  dyn_commit_info =  api.git.get_commit(owner=owner, repo=repoName, commit_sha=commitHash, token=Token);
  dyn_commit_url = dyn_commit_info['html_url']
@@ -48,7 +52,8 @@ def prepareFileCommitsOutput(owner,repoName,commitHash):
  # this list has commit changes of each file appended as one group-like element, which are orderly saved via the for loop
  dyn_commit_groups_box = []
  for group in dyn_commit_groups:
-  dyn_commit_groups_box.append(group.split('\\n'))
+   dyn_commit_groups_box.append(''.join(group).split('\\n'))
+  #dyn_commit_groups_box.append(group.split('\\n'))
 
 
  return [dyn_download_url_prefix ,dyn_output,dyn_commit_groups,dyn_commit_groups_box, dyn_commit_info, dyn_prev_commit_hash, dyn_commit_url, dyn_commit_area_prefix]
@@ -182,30 +187,38 @@ def getCommitLOCsOnline(owner,repoName,commitHash, oneFileOnly = False, targetFi
   groupFileIndex = 0
   fileName = None
   commitChangeLocsPack = []
-  for group in commit_groups_box[1:]:
-      fileName = commit_files[groupFileIndex]
+  #for group in commit_groups_box[1:]:
+  for file in commit_files:
+      #fileName = commit_files[groupFileIndex]
+      #print('fi',groupFileIndex,(commit_groups_box[1:]))
+      #print('fn',fileName,group)
       groupFileIndex = groupFileIndex + 1
+      group = commit_groups_box[groupFileIndex]
+      #print('gr',group)
       # indexes of deleted/inserted lines
-      deleteLocNumber = int(re.findall(r'\d+', group[0])[0])
-      insertLocNumber = int(re.findall(r'\d+', group[0])[2])
+      deleteLocNumber =int ((re.findall(r'\d+', group[0]))[0])
+      insertIndex =  2 if len(re.findall(r'\d+', group[0])) > 2 else 1
+      insertLocNumber = int ((re.findall(r'\d+', group[0]))[insertIndex])
       deleteArray = []
       insertArray = []
       # save all deleted LOCs
       for i in range(len(group)):
+          deleteNums = re.findall(r'[+-]?\d*\.?\d+', group[i])
           if (i > 0 and oneFileOnly == False ) or (i > 0 and oneFileOnly ==  ( targetFileName in commit_files )):
-              deleteLocNumber = deleteLocNumber + 1
-              if(group[i][0] == '-' and group[i] is not None and group[i][0] != '' and group[i][1] != '-'):
-               deleteArray.append([deleteLocNumber,group[i]])
+              deleteLocNumber = int(deleteNums[0]) if len(deleteNums) == 4 else  deleteLocNumber + 1
+              if (group[i] is not None and len(group[i]) > 1 and group[i][0] == '-' and group[i][1] != ''):
+               deleteArray.append([deleteLocNumber - 1,group[i]])
        # save all inserted LOCs
-      for j in range(len(group) -1 ):
+      for j in range(len(group)):
+          insertNums = re.findall(r'[+-]?\d*\.?\d+', group[j])
           if (j > 0 and oneFileOnly == False ) or (j > 0 and oneFileOnly ==  ( targetFileName in commit_files )):
-               insertLocNumber = insertLocNumber + 1
-               if(group[j][0] == '+' and group[j] is not None and group[j][0] != '' and group[j][1] != '+'):
-                insertArray.append([insertLocNumber,group[j]])
+               insertLocNumber  = int(insertNums[2]) if len(insertNums) == 4 else  insertLocNumber + 1
+               if (group[j] is not None and len(group[j]) > 1 and group[j][0] == '+' and group[j][1] != ''):
+                insertArray.append([insertLocNumber - 1,group[j]])
 
-      commitChangeLocsDict[fileName] = ([{'deletedLines':deleteArray,'insertedLines':insertArray}])
-      commitDeletionsLocsDict[fileName] = ([deleteArray])
-      commitInsertionsLocsDict[fileName] = ([insertArray])
+      commitChangeLocsDict[file] = ([{'deletedLines':deleteArray,'insertedLines':insertArray}])
+      commitDeletionsLocsDict[file] = ([deleteArray])
+      commitInsertionsLocsDict[file] = ([insertArray])
 
   return [commitChangeLocsDict,commitDeletionsLocsDict,commitInsertionsLocsDict]
 
@@ -346,14 +359,16 @@ def finalDownloadOnline(cveID, ownerName,repoName,commitString, fileArrCommitStr
     preFolderDir = makeOrTakePreFolderOnline(cveID)
     postFolderDir = makeOrTakePostFolderOnline(cveID)
     targetDir = postFolderDir if usePostFolder == True else preFolderDir
-    fileArray = getCommitFilesViaUrl(ownerName,repoName, fileArrCommitHash) 
+    fileArray = getCommitFilesViaUrl(ownerName,repoName, fileArrCommitHash)
+    #print('fa', getCommitFilesViaUrl(ownerName,repoName, fileArrCommitHash))
+    # for loop has commit files download in the respected folder(pre-/post-patch) dependent on version
+    
     #save all LOC changes in a JSON
     if(usePostFolder):
       commitLineChangesData = getCommitLOCsOnline(ownerName,repoName, fileArrCommitHash)[0]
       commitJsonData = buildJSONDataOnline(cveID,bugDescInput,patchDescInput,commitLineChangesData)
       createOrModCveJSONOnline(cveID, commitJsonData)
-    # for loop has commit files download in the respected folder(pre-/post-patch) dependent on version
-   for file in fileArray:
+    for file in fileArray:
          fileURL = downloadURLOnline(ownerName,repoName,commitHash,file)
          fileName = fileURL.rsplit('/')[-1]
          req = requests.get(fileURL, allow_redirects=True)
