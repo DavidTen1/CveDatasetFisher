@@ -32,6 +32,8 @@ def prepareFileCommitsOutput(owner,repoName,commitHash):
         [dyn_download_url_prefix ,dyn_output,dyn_commit_groups,dyn_commit_groups_box, dyn_commit_info, dyn_prev_commit_hash, dyn_commit_url](list): contains file download URL prefix by commit, all LOC changes for all files of a commit, the current and previous commit hash each
  """
  api = GhApi(token= Token)
+ ghauth = GhDeviceAuth()
+ print('ghauth',ghauth.url_docs())
  user = api.users.get_authenticated()
  #print(user)
  rate_limit = api.rate_limit.get()
@@ -48,14 +50,16 @@ def prepareFileCommitsOutput(owner,repoName,commitHash):
  dyn_command = 'cmd /k curl -H "Accept: application/vnd.github.diff."  https://api.github.com/repos/'+ owner+'/'+repoName + '/commits/' + commitHash
  dyn_output = str(subprocess.check_output(dyn_command, shell=True)).split('\\n')
 #groups commit changes by file
- dyn_commit_groups = str(subprocess.check_output(dyn_command, shell=True)).split('@@ -')
+ #dyn_commit_groups = str(subprocess.check_output(dyn_command, shell=True)).split('@@ -')
+ dyn_commit_groups = str(subprocess.check_output(dyn_command, shell=True)).split('--git')
  # this list has commit changes of each file appended as one group-like element, which are orderly saved via the for loop
+ #dyn_commit_groups_box = dyn_commit_groups.split('--git ')
+ #print('dggg', dyn_commit_groups , len(dyn_commit_groups))
  dyn_commit_groups_box = []
  for group in dyn_commit_groups:
-   dyn_commit_groups_box.append(''.join(group).split('\\n'))
-  #dyn_commit_groups_box.append(group.split('\\n'))
+  dyn_commit_groups_box.append(group.split('\\n')[4:])
 
-
+ #print('dgbbb', dyn_commit_groups_box, len(dyn_commit_groups_box))
  return [dyn_download_url_prefix ,dyn_output,dyn_commit_groups,dyn_commit_groups_box, dyn_commit_info, dyn_prev_commit_hash, dyn_commit_url, dyn_commit_area_prefix]
 
  
@@ -180,6 +184,7 @@ def getCommitLOCsOnline(owner,repoName,commitHash, oneFileOnly = False, targetFi
   """
   commit_files =  getCommitFilesViaUrl(owner,repoName,commitHash)
   commit_groups_box = prepareFileCommitsOutput(owner,repoName,commitHash)[3]
+  print('ccccccgr',commit_groups_box)
   commitChangeLocsDict = {}
   commitDeletionsLocsDict = {}
   commitInsertionsLocsDict = {}

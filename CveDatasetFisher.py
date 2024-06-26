@@ -212,7 +212,9 @@ def downloadSavedCves():
     for entry in cveDownloadListCombobox['values']:
          #print('cnty',entry, type(entry))
          jsonEntry = entry.replace("'",'"')
-         #print('cnty',jsonEntry, type(jsonEntry))
+#         if '\\"s' in jsonEntry:
+#          jsonEntry = jsonEntry.replace('\\"s', "\\'s")
+#         print('cnty',jsonEntry, type(jsonEntry))
          parsedEntry = json.loads(jsonEntry)
          #print('cnty ', parsedEntry, type(parsedEntry), 'Owner' not in parsedEntry.keys())
          if 'Owner' not in parsedEntry.keys():

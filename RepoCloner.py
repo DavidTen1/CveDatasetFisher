@@ -287,7 +287,7 @@ def getCommitLOCsOffline(commitString, repoName, oneFileOnly = False, targetFile
       deleteArray = []
       insertArray = []
       # save all deleted LOCs
-      for i in range(len(group) ):
+      for i in range(len(group)):
           deleteNums = re.findall(r'[+-]?\d*\.?\d+', group[i])
           #print('dd',deleteNums)
           if (i > 0 and oneFileOnly == False ) or (i > 0 and oneFileOnly ==  ( targetFileName in commit_files )):
@@ -298,9 +298,9 @@ def getCommitLOCsOffline(commitString, repoName, oneFileOnly = False, targetFile
       for j in range(len(group)):
           insertNums = re.findall(r'[+-]?\d*\.?\d+', group[j])
           #print('ii',insertNums)
-          insertLocNumber  = int(insertNums[2]) if len(insertNums) == 4 else  insertLocNumber + 1
           #print('in',insertLocNumber)
           if (j > 0 and oneFileOnly == False ) or (j > 0 and oneFileOnly ==  ( targetFileName in commit_files )):
+               insertLocNumber  = int(insertNums[2]) if len(insertNums) == 4 else  insertLocNumber + 1
                #print('in',insertLocNumber)
                if (group[j] is not None and len(group[j]) > 1 and group[j][0] == '+' and group[j][1] != ''):
                 insertArray.append([insertLocNumber - 1 ,group[j]])
