@@ -18,6 +18,12 @@ if os.path.exists(file_path):
  token_file = open(file_path, 'r')
  Token = token_file.read()
 
+api = GhApi(token= Token)
+ghauth = GhDeviceAuth()
+#print('ghauth',ghauth.url_docs())
+#print(ghauth.auth())
+user = api.users.get_authenticated()
+
 
 def prepareFileCommitsOutput(owner,repoName,commitHash):
  """Prepares the download of all CVE-relevant data (commit changes, all pre- and post-patch files) for comparing the pre- and post-patch states to track the patches' applications
@@ -31,12 +37,13 @@ def prepareFileCommitsOutput(owner,repoName,commitHash):
     Returns:
         [dyn_download_url_prefix ,dyn_output,dyn_commit_groups,dyn_commit_groups_box, dyn_commit_info, dyn_prev_commit_hash, dyn_commit_url](list): contains file download URL prefix by commit, all LOC changes for all files of a commit, the current and previous commit hash each
  """
- api = GhApi(token= Token)
- ghauth = GhDeviceAuth()
- print('ghauth',ghauth.url_docs())
- user = api.users.get_authenticated()
+ #api = GhApi(token= Token)
+ #ghauth = GhDeviceAuth()
+ #print('ghauth',ghauth.url_docs())
+ #user = api.users.get_authenticated()
  #print(user)
- rate_limit = api.rate_limit.get()
+ #rate_limit = api.rate_limit.get()
+ #print(ghauth.auth())
  #print(rate_limit)
  # replace string enterTokenHere with the actual token, token recognition will be fixed later on.
  dyn_commit_info =  api.git.get_commit(owner=owner, repo=repoName, commit_sha=commitHash, token=Token);
@@ -89,6 +96,14 @@ def getCommitFilesViaUrl(owner,repoName,commitHash):
     
 
 
+def contains_charOnline(array, char):
+    for string in array:
+        if char in string:
+            return True
+    return False
+
+def index_of_element_with_charOnline(array, char):
+    return next((index for index, string in enumerate(array) if char in string), -1)
 
     
 
@@ -182,9 +197,9 @@ def getCommitLOCsOnline(owner,repoName,commitHash, oneFileOnly = False, targetFi
     Returns:
         [commitChangeLocsDict,commitDeletionsLocsDict,commitInsertionsLocsDict](list): Dictionaries, one with insertions, one with deletions, one with both
   """
+  
   commit_files =  getCommitFilesViaUrl(owner,repoName,commitHash)
   commit_groups_box = prepareFileCommitsOutput(owner,repoName,commitHash)[3]
-  print('ccccccgr',commit_groups_box)
   commitChangeLocsDict = {}
   commitDeletionsLocsDict = {}
   commitInsertionsLocsDict = {}
@@ -194,37 +209,40 @@ def getCommitLOCsOnline(owner,repoName,commitHash, oneFileOnly = False, targetFi
   commitChangeLocsPack = []
   #for group in commit_groups_box[1:]:
   for file in commit_files:
-      #fileName = commit_files[groupFileIndex]
-      #print('fi',groupFileIndex,(commit_groups_box[1:]))
-      #print('fn',fileName,group)
       groupFileIndex = groupFileIndex + 1
       group = commit_groups_box[groupFileIndex]
-      #print('gr',group)
       # indexes of deleted/inserted lines
-      deleteLocNumber =int ((re.findall(r'\d+', group[0]))[0])
-      insertIndex =  2 if len(re.findall(r'\d+', group[0])) > 2 else 1
-      insertLocNumber = int ((re.findall(r'\d+', group[0]))[insertIndex])
+      startIndexArr = (re.findall(r'[+-]?\d*\.?\d+', group[0]))
+      deleteLocNumber =   int( startIndexArr[0][1:])
+      insertIndex = index_of_element_with_charOnline( startIndexArr , '+')
+      insertLocNumber = int(startIndexArr[insertIndex])
       deleteArray = []
       insertArray = []
       # save all deleted LOCs
       for i in range(len(group)):
           deleteNums = re.findall(r'[+-]?\d*\.?\d+', group[i])
-          if (i > 0 and oneFileOnly == False ) or (i > 0 and oneFileOnly ==  ( targetFileName in commit_files )):
-              deleteLocNumber = int(deleteNums[0]) if len(deleteNums) == 4 else  deleteLocNumber + 1
-              if (group[i] is not None and len(group[i]) > 1 and group[i][0] == '-' and group[i][1] != ''):
-               deleteArray.append([deleteLocNumber - 1,group[i]])
-       # save all inserted LOCs
+          #print('i',i, 'dn', deleteNums, 'dln',deleteLocNumber )
+          if(group[i][0] != '+'):
+          #if (i >= 0 and oneFileOnly == False ) and (group[i][0] == '-' or contains_charOnline(deleteNums, '+')) or (i > 0 and oneFileOnly ==  ( targetFileName in commit_files ) and group[i][0] == '-'):
+           deleteLocNumber = int(deleteNums[0][1:]) if contains_charOnline(deleteNums, '+') else  deleteLocNumber + 1
+          if(group[i][0] == '-'):
+           deleteArray.append([deleteLocNumber - 1,group[i]])
+              
+      # save all inserted LOCs
       for j in range(len(group)):
           insertNums = re.findall(r'[+-]?\d*\.?\d+', group[j])
-          if (j > 0 and oneFileOnly == False ) or (j > 0 and oneFileOnly ==  ( targetFileName in commit_files )):
-               insertLocNumber  = int(insertNums[2]) if len(insertNums) == 4 else  insertLocNumber + 1
-               if (group[j] is not None and len(group[j]) > 1 and group[j][0] == '+' and group[j][1] != ''):
-                insertArray.append([insertLocNumber - 1,group[j]])
+          #if (j >= 0 and oneFileOnly == False ) and (group[j][0] == '+' or contains_charOnline(insertNums, '+')) or (j >= 0 and oneFileOnly ==  ( targetFileName in commit_files ) and group[j][0] == '+'):
+          insertIndex = index_of_element_with_charOnline(insertNums, '+')
+          if(group[j][0] != '-'):
+           insertLocNumber  = int(insertNums[insertIndex]) if contains_charOnline(insertNums, '+') else insertLocNumber + 1
+           #print('j',j, 'in', deleteNums, 'dln',insertLocNumber)
+          if(group[j][0] == '+'):
+           insertArray.append([insertLocNumber - 1 ,group[j]])
 
       commitChangeLocsDict[file] = ([{'deletedLines':deleteArray,'insertedLines':insertArray}])
       commitDeletionsLocsDict[file] = ([deleteArray])
       commitInsertionsLocsDict[file] = ([insertArray])
-
+      
   return [commitChangeLocsDict,commitDeletionsLocsDict,commitInsertionsLocsDict]
 
 

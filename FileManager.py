@@ -185,7 +185,12 @@ def createOrModCveJSON(cveID, data):
 
 
 
+def contains_char(array, char):
+    for string in array:
+        if char in string:
+            return True
+    return False
 
-
-
+def index_of_element_with_char(array, char):
+    return next((index for index, string in enumerate(array) if char in string), -1)
 
