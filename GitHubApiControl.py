@@ -11,7 +11,7 @@ import git
 import json
 
 cwd = os.getcwd()
-
+#check existence of a file containing a token and save the latter for REST API auth
 Token = ''
 file_path = os.path.join(cwd, 'token'  + ".txt")
 if os.path.exists(file_path):
@@ -20,9 +20,12 @@ if os.path.exists(file_path):
 
 api = GhApi(token= Token)
 ghauth = GhDeviceAuth()
-#print('ghauth',ghauth.url_docs())
-#print(ghauth.auth())
-user = api.users.get_authenticated()
+
+
+
+#os.system(cmd)
+
+#print(os.system(cmd))
 
 
 def prepareFileCommitsOutput(owner,repoName,commitHash):
@@ -53,8 +56,8 @@ def prepareFileCommitsOutput(owner,repoName,commitHash):
  dyn_download_url_prefix = 'https://raw.githubusercontent.com/'+ owner+'/'+repoName + '/' + commitHash
  dyn_commit_area_prefix = 'https://github.com/'+ owner +  '/'+ repoName +'/commit/'+ commitHash +'.diff'
  # the command outputs all commit data, albeit unordered
- #dyn_command = 'cmd /k curl -H "Accept: application/vnd.github.diff." $ https://api.github.com/repos/'+ owner+'/'+repoName + '/commits/' + commitHash
- dyn_command = 'cmd /k curl -H "Accept: application/vnd.github.diff."  https://api.github.com/repos/'+ owner+'/'+repoName + '/commits/' + commitHash
+ # the token authenticates the requests so their amount is 5000, otherwise it'd be 50, the more code lines are recognized, the more requests will be needed, if you have none left, their amount will be reseted to 5000 after a certain time
+ dyn_command = 'cmd /k  curl -H "Accept: application/vnd.github.diff."  -H "Authorization: token '+ Token + '"  https://api.github.com/repos/'+ owner+'/'+repoName + '/commits/' + commitHash
  dyn_output = str(subprocess.check_output(dyn_command, shell=True)).split('\\n')
 #groups commit changes by file
  #dyn_commit_groups = str(subprocess.check_output(dyn_command, shell=True)).split('@@ -')
@@ -66,7 +69,6 @@ def prepareFileCommitsOutput(owner,repoName,commitHash):
  for group in dyn_commit_groups:
   dyn_commit_groups_box.append(group.split('\\n')[4:])
 
- #print('dgbbb', dyn_commit_groups_box, len(dyn_commit_groups_box))
  return [dyn_download_url_prefix ,dyn_output,dyn_commit_groups,dyn_commit_groups_box, dyn_commit_info, dyn_prev_commit_hash, dyn_commit_url, dyn_commit_area_prefix]
 
  
@@ -151,7 +153,7 @@ def showCommitAreaOnline(owner,repoName,commitHash,filePath):
      deletionArray = []
      insertionArray = []
      
-     
+     #deleted lines are marked with -, new ones with + and are saved correspondingly
      for line in commit_file_area_data.split('\n'):
           if len(line) == 0 or len(line) == 1:
                 continue
@@ -212,7 +214,11 @@ def getCommitLOCsOnline(owner,repoName,commitHash, oneFileOnly = False, targetFi
       groupFileIndex = groupFileIndex + 1
       group = commit_groups_box[groupFileIndex]
       # indexes of deleted/inserted lines
+      #print('group', group) 
       startIndexArr = (re.findall(r'[+-]?\d*\.?\d+', group[0]))
+      if(len (startIndexArr) <= 0):
+          continue
+      #print('sta', startIndexArr, startIndexArr[0][1:])
       deleteLocNumber =   int( startIndexArr[0][1:])
       insertIndex = index_of_element_with_charOnline( startIndexArr , '+')
       insertLocNumber = int(startIndexArr[insertIndex])
@@ -221,10 +227,11 @@ def getCommitLOCsOnline(owner,repoName,commitHash, oneFileOnly = False, targetFi
       # save all deleted LOCs
       for i in range(len(group)):
           deleteNums = re.findall(r'[+-]?\d*\.?\d+', group[i])
-          #print('i',i, 'dn', deleteNums, 'dln',deleteLocNumber )
+          #print('dn', deleteNums)
+          #finds non-inserted lines
           if(group[i][0] != '+'):
-          #if (i >= 0 and oneFileOnly == False ) and (group[i][0] == '-' or contains_charOnline(deleteNums, '+')) or (i > 0 and oneFileOnly ==  ( targetFileName in commit_files ) and group[i][0] == '-'):
-           deleteLocNumber = int(deleteNums[0][1:]) if contains_charOnline(deleteNums, '+') else  deleteLocNumber + 1
+          ##finds non-deleted lines
+           deleteLocNumber = int(deleteNums[0][1:]) if contains_charOnline(deleteNums, '+')  else  deleteLocNumber + 1
           if(group[i][0] == '-'):
            deleteArray.append([deleteLocNumber - 1,group[i]])
               

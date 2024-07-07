@@ -6,6 +6,9 @@ from git import *
 import os
 import subprocess
 import json
+
+
+
 master = Tk()
 
 style = ttk.Style()
@@ -14,6 +17,21 @@ style.configure('Custom.TEntry', readonlybackground='#FFFFFF')# readonly backgro
 #window size
 master.geometry("750x350")
 master.title('CveDatasetFisher')
+
+repoList = []
+
+newRepoNameInput = Entry(master)
+
+repoList = []
+for file in allfiles:
+ potentialGitPath = cwd + "\\" + file + '\\.git'
+ dict = {}
+ if (os.path.exists(potentialGitPath)):
+  repoList.append(file)
+  dict[file] = listCurrentRepoHistory(file)
+  reposCommitsList.append(dict)
+  #self.repobox_values = repoList
+
 
 
 
@@ -24,6 +42,15 @@ class ComboboxUpdater:
         self.prevCommitIndex = 0
         self.nextCommitIndex = 0
         self.prevCommitHash = None
+        self.repobox_values = []
+        for file in allfiles:
+         potentialGitPath = cwd + "\\" + file + '\.git'
+         dict = {}
+         if (os.path.exists(potentialGitPath)):
+          self.repobox_values.append(file)
+          dict[file] = listCurrentRepoHistory(file)
+          reposCommitsList.append(dict)
+        
 
     def update_values(self, repoName):
         """updates commit list in commit dropdowm
@@ -42,8 +69,9 @@ class ComboboxUpdater:
         
         # Print the new values globally
         #print("New Combobox Values (Global):", self.combobox_values)
+        
 
-
+     
     def update_fileValues(self, commitString):
         """updates file list in file dropdowm
 
@@ -76,6 +104,10 @@ class ComboboxUpdater:
         self.combobox['values'] = new_values
         self.combobox_values = new_values
 
+    def update_repoValues(self):
+        self.combobox['values'] = new_values
+        self.combobox_values = new_values
+
     def get_combobox_values(self):
         """updates file list in file dropdowm for ghapi
 
@@ -85,6 +117,19 @@ class ComboboxUpdater:
         self.combobox_values(list): returns current combobox values
         """
         return self.combobox_values
+
+
+
+
+    def get_repobox_values(self):
+        """updates file list in file dropdowm for ghapi
+
+    Args:
+       self: class instance
+    Returns:
+        self.combobox_values(list): returns current combobox values
+        """
+        return self.repobox_values
 
     def set_previous_commitHash(self, ownerName,repoName,commitString):
         """returns previous commit hash for ghapi
@@ -151,6 +196,10 @@ class ComboboxUpdater:
 # the updaters each update the file and the commit comboboxes
 combobox_updater = ComboboxUpdater()
 combobox_updater2 = ComboboxUpdater()
+combobox_updater3 = ComboboxUpdater()
+
+
+#combobox_updater3.updateReposCommitList()
 
 cveDownloadArr = None
 cveDownloadsArrFilePath = os.path.join(cwd, "cveDownloadList.json")
@@ -252,7 +301,7 @@ def search(event): #GFG
         if str(event.widget) == '.cve':
             cvesLb['values'] = cvesList
         if str(event.widget) == '.repo':
-            reposLb['values'] = repoList
+            reposLb['values'] =  repoList
         if str(event.widget) ==  '.cveDownloads':
             cvesDownloadListLb['values'] = cveDownloadListCombobox['values']
     else:
@@ -329,7 +378,6 @@ def save_token():
 #6 input entries
 fileDirInput = Entry(master)
 repoURLInput = Entry(master)
-newRepoNameInput = Entry(master)
 ownerOnlineInput =Entry(master)
 commitOnlineInput  =Entry(master)
 repoOnlineInput = Entry(master)
@@ -359,10 +407,11 @@ if os.path.exists(file_path):
 
 
 Label(master, text="File directory").grid(row=0) # if only the row index is selected, the default column index will be 0, same will be for the other way around
+#Button(master, text='Open file', command=  restart_script()).grid(row=0, column=2, sticky=W, pady=4)
 Button(master, text='Open file', command=lambda: browseFiles(fileDirInput ) ).grid(row=0, column=2, sticky=W, pady=4)
 Label(master, text="Download repo").grid(row=1) # if only the row index is selected, the default column index will be 0, same will be for the other way around
 Label(master, text="Commit name/hash").grid(row=2)  # if only the row index is selected, the default column index will be 0, same will be for the other way around
-Button(master, text='Clone repo', command=lambda: repoUpdater.cloneRepo(repoURLInput.get(), newRepoNameInput.get())).grid(row=1, column=11, sticky=W , padx=0,pady=4)
+Button(master, text='Clone repo', command=lambda: [repoUpdater.cloneRepo(repoURLInput.get(), newRepoNameInput.get())]  ).grid(row=1, column=11, sticky=W , padx=0,pady=4)
 Button(master, text='Save token', command=save_token).grid(row=3, column=7, sticky=W , padx=0,pady=4)
 
 Label(master, text="Choose repo").grid(row=0, column = 9)
@@ -399,8 +448,9 @@ combobox_updater.set_combobox(commitCombobox)
 fileCombobox= ttk.Combobox(master, value=combobox_updater2.get_combobox_values(), name='file')
 combobox_updater2.set_combobox(fileCombobox)
 cveDownloadListCombobox = ttk.Combobox(master, value=cveDownloadArr, name='cveDownloads')
+#repoCombobox = ttk.Combobox(master, value=repoList, name='repo')
 repoCombobox = ttk.Combobox(master, value=repoList, name='repo')
-
+combobox_updater3.set_combobox(repoCombobox)
 #ONLY COMPARE CHANGES FROM SAME COMMIT
 
 #2 different text boxes showing either whole file changes, areas of modifications or merely changed lines
@@ -437,8 +487,8 @@ repoCombobox.grid(row=0, column = 10)
 reposLb = repoCombobox
 reposLb.bind('<KeyRelease>',search)
 
-Button(master, text='Choose repo', command=lambda: [combobox_updater.update_values(repoCombobox.get()), repoUpdater.setRepo(repoCombobox.get()) , repoUpdater.getRepo()   ] ).grid(row=0, column=11, sticky=W, pady=4)
-Button(master, text='Select commit', command=lambda: [combobox_updater2.update_fileValues(commitCombobox.get()) ,  combobox_updater.setNeighboredCommitsIndexes(commitCombobox.get()), combobox_updater.get_commit_indexes()  ] ).grid(row=2, column=2, sticky=W , padx=0,pady=4)
+Button(master, text='Choose repo', command=lambda: [combobox_updater.update_values(repoCombobox.get()), repoUpdater.setRepo(repoCombobox.get()) , repoUpdater.getRepo()] ).grid(row=0, column=11, sticky=W, pady=4)
+Button(master, text='Select commit', command=lambda: [combobox_updater2.update_fileValues(commitCombobox.get()) ,  combobox_updater.setNeighboredCommitsIndexes(commitCombobox.get()), combobox_updater.get_commit_indexes() , checkoutCommit(commitCombobox.get())   ] ).grid(row=2, column=2, sticky=W , padx=0,pady=4)
 
 
 #Quit button

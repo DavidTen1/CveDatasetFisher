@@ -9,7 +9,6 @@ from GitHubApiControl import *
 from tkinter import filedialog, messagebox, ttk
 # URL of the Git repository
 #repo_url = 'https://github.com/vim/vim.git'
-repoList = []
 reposCommitsList = []
 lAlt = []
 cvesList = []
@@ -17,6 +16,18 @@ cvesList = []
 cwd = os.getcwd()
 allfiles = os.listdir(cwd)
 
+#repo = git.Repo('ImageMagick')
+#repo.git.checkout('main')
+#repo.git.pull()
+
+def restart_program():
+    python = sys.executable
+    os.execl(python, python, *sys.argv)
+
+
+    
+def restart_click():
+    restart_program()
 
 # this class updates the currently selected repos for examination of them as well as of commits
 class RepoUpdater:
@@ -35,6 +46,7 @@ class RepoUpdater:
        """
        git.Repo.clone_from(repoURL, repoName)
        self.repo = git.Repo(repoName)
+       restart_click()
        
      def setRepo(self,repoName):
       """sets new repo
@@ -47,6 +59,7 @@ class RepoUpdater:
     None
       """
       self.repo = git.Repo(repoName)
+      #print('sr choose', self.repo, type(git.Repo(repoName)) )
 
      def getRepo(self):
       """returns current repo
@@ -68,6 +81,9 @@ class RepoUpdater:
     Returns:
     None
       """
+      self.repo = self.getRepo()
+      #print('sr pull', self.repo, type(self.repo) )
+      self.repo.git.checkout('main')
       self.repo.git.pull()
 
 
@@ -85,18 +101,7 @@ def listCurrentRepoHistory(repoName):
      gitRepoHistory = git.Repo(repoName).git.log('--oneline')
      commitList = None
      commitList = gitRepoHistory.split("\n")
-     return commitList
-
-for file in allfiles:
-  potentialGitPath = cwd + "\\" + file + '\.git'
-  dict = {}
-  if ('cve' in file.lower()):
-      cvesList.append(file) 
-  if (os.path.exists(potentialGitPath)):
-   repoList.append(file)
-   dict[file] = listCurrentRepoHistory(file)
-   reposCommitsList.append(dict) 
-     
+     return commitList     
 
 def get_value_by_key(array, search_key): #CGPT
     """Lists commits in a combobox
@@ -113,25 +118,6 @@ def get_value_by_key(array, search_key): #CGPT
             return dictionary[search_key]
     return None  # Key not found in any dictionary
 
-
-def updateCommitDropdown(combobox, repoName):
-    """Lists commits in a combobox
-
-    Args:
-       combobox(Combobox): commit list combobox
-       commitString(string): Commit title containing the hash and the summary of changes
-
-    Returns:
-    None
-    """
-    global lAlt
-    global x
-    x= x+ 6
-    combobox.set('')
-    combobox["values"]= []
-    combobox["values"]=get_value_by_key(reposCommitsList, repoName)
-    repoList = get_value_by_key(reposCommitsList, repoName)
-    lAlt = combobox["values"]
 
 
 def updateFilesDropdown(combobox, commitString):
@@ -230,6 +216,10 @@ def showCommitArea(commitString, filePath, repoName):
 #print(repo.git.show('-U0', '67b871032183a29d3ca0553db6ce1ae80fddb9aa'))
 
 
+
+def checkoutCommit(commitInfo):
+     repo = repoUpdater.getRepo()
+     repo.git.checkout(commitInfo.split(" ", 1)[0])
      
 
 def showOnlyChangedLines(commitString,filePath, repoName):
