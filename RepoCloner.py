@@ -85,6 +85,9 @@ class RepoUpdater:
       #print('sr pull', self.repo, type(self.repo) )
       self.repo.git.checkout('main')
       self.repo.git.pull()
+      newRepo = self.repo
+      self.repo = newRepo
+      restart_click()
 
 
 repoUpdater = RepoUpdater()
@@ -149,8 +152,7 @@ def showChangedFiles(commitString):
     """
      commitHash = commitString.split(" ", 1)[0]
      repo = repoUpdater.getRepo()
-     changedFilesData = repo.git.show('--name-only', commitHash,'--oneline' ).split('\n')[1:]
-     #print('cc', repo.git.show('--name-only', commitHash,'--oneline' ))
+     changedFilesData = repo.git.show('--name-only', commitHash,'--oneline' ).split('\n')[1:] or 'None'
      return changedFilesData
 
 
@@ -263,6 +265,9 @@ def getCommitLOCsOffline(commitString, repoName, oneFileOnly = False, targetFile
   fileName = None
   commitChangeLocsPack = []
   for file in commit_files:
+      fileFound = doesFileExist(cwd + '\\' + repoName + '\\' + file.replace('/','\\'))
+      if(fileFound == False):
+          continue
       arrayGroup = showOnlyChangedLines(commitString,file, repoName)
       group = ''.join(arrayGroup).split('\n')
       # indexes of deleted/inserted lines
@@ -276,7 +281,7 @@ def getCommitLOCsOffline(commitString, repoName, oneFileOnly = False, targetFile
       for i in range(len(group)):
           deleteNums = re.findall(r'[+-]?\d*\.?\d+', group[i])
           if (i >= 0 and oneFileOnly == False ) and (group[i][0] == '-' or contains_char(deleteNums, '+')) or (i >= 0 and oneFileOnly ==  ( targetFileName in commit_files ) and group[i][0] == '-'):
-              deleteLocNumber = int(deleteNums[0]) if contains_char(deleteNums, '+') else  deleteLocNumber + 1
+              deleteLocNumber = int(deleteNums[0]) if (contains_charOnline(deleteNums, '+') and '@@ ' in group[i]) else  deleteLocNumber + 1
               if(group[i][0] == '-'):
                deleteArray.append([deleteLocNumber - 1,group[i]])
               
@@ -285,7 +290,7 @@ def getCommitLOCsOffline(commitString, repoName, oneFileOnly = False, targetFile
           insertNums = re.findall(r'[+-]?\d*\.?\d+', group[j])
           if (j >= 0 and oneFileOnly == False ) and (group[j][0] == '+' or contains_char(insertNums, '+')) or (j >= 0 and oneFileOnly ==  ( targetFileName in commit_files ) and group[j][0] == '+'):
                insertIndex = index_of_element_with_char(insertNums, '+')                                
-               insertLocNumber  = int(insertNums[insertIndex]) if contains_char(insertNums, '+') else insertLocNumber + 1
+               insertLocNumber  = int(insertNums[insertIndex]) if (contains_charOnline(insertNums, '+') and '@@ ' in group[j]) else insertLocNumber + 1
                if(group[j][0] == '+'):
                 insertArray.append([insertLocNumber - 1 ,group[j]])
 
@@ -342,7 +347,8 @@ def finalDownloadOffline(cveID, commitString, fileArrCommitString, repoName , bu
       createOrModCveJSON(cveID, commitJsonData)
     # for loop has commit files download in the respected folder(pre-/post-patch) dependent on version
      for file in fileArray:
-          copyFileToDir(repoName + '\\' + file.replace('/','\\')  , targetDir)
+          if(doesFileExist(cwd + '\\' + repoName + '\\' + file.replace('/','\\'))):
+           copyFileToDir(repoName + '\\' + file.replace('/','\\')  , targetDir)
 
           
     else:

@@ -231,7 +231,7 @@ def getCommitLOCsOnline(owner,repoName,commitHash, oneFileOnly = False, targetFi
           #finds non-inserted lines
           if(group[i][0] != '+'):
           ##finds non-deleted lines
-           deleteLocNumber = int(deleteNums[0][1:]) if contains_charOnline(deleteNums, '+')  else  deleteLocNumber + 1
+           deleteLocNumber = int(deleteNums[0][1:]) if (contains_charOnline(deleteNums, '+') and '@@ ' in group[i]) else deleteLocNumber + 1
           if(group[i][0] == '-'):
            deleteArray.append([deleteLocNumber - 1,group[i]])
               
@@ -241,7 +241,7 @@ def getCommitLOCsOnline(owner,repoName,commitHash, oneFileOnly = False, targetFi
           #if (j >= 0 and oneFileOnly == False ) and (group[j][0] == '+' or contains_charOnline(insertNums, '+')) or (j >= 0 and oneFileOnly ==  ( targetFileName in commit_files ) and group[j][0] == '+'):
           insertIndex = index_of_element_with_charOnline(insertNums, '+')
           if(group[j][0] != '-'):
-           insertLocNumber  = int(insertNums[insertIndex]) if contains_charOnline(insertNums, '+') else insertLocNumber + 1
+           insertLocNumber  = int(insertNums[insertIndex]) if (contains_charOnline(insertNums, '+') and '@@ ' in group[j]) else insertLocNumber + 1
            #print('j',j, 'in', deleteNums, 'dln',insertLocNumber)
           if(group[j][0] == '+'):
            insertArray.append([insertLocNumber - 1 ,group[j]])
