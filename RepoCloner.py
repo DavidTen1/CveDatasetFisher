@@ -200,10 +200,16 @@ def showCommitArea(commitString, filePath, repoName):
      for line in commitArea:
           if len(line) == 0 or len(line) == 1:
                 continue
+
+
+          if('@@' in line and '\"' not in line):
+              deletionArray.append(line)
+              insertionArray.append(line)  
+
           #add deleted lines to deletion array, inserted ones to the insertion array
-          if (line[0] == '+' and  line[1] == ' ') == False:
+          elif (line[0] == '-'):
                 deletionArray.append(line)
-          if (line[0] == '-' and  line[1] == ' ') == False:
+          elif (line[0] == '+' ):
                 insertionArray.append(line)      
                 
 

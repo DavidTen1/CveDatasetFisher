@@ -28,6 +28,18 @@ ghauth = GhDeviceAuth()
 #print(os.system(cmd))
 
 
+def isDoublequotsCountEven(string):
+    return  string.count('\"') % 2 == 0 and  string.count('\"')  > 0
+
+
+def isBackslashLastChar(string):
+    return  string[-1] == '\\'
+
+
+def isLinebreakWrong(string):
+    return  isBackslashLastChar(string)
+
+
 def prepareFileCommitsOutput(owner,repoName,commitHash):
  """Prepares the download of all CVE-relevant data (commit changes, all pre- and post-patch files) for comparing the pre- and post-patch states to track the patches' applications
 
@@ -85,6 +97,8 @@ def getCommitFilesViaUrl(owner,repoName,commitHash):
         commit_files: list of files from a commit
     """
     stdOutput = prepareFileCommitsOutput(owner,repoName,commitHash)[1]
+    #print('std output' , stdOutput)
+    
     fileMark = '---' or '+++'
     commit_copy = [file for file in stdOutput if fileMark in file]
     commit_files = []
@@ -157,11 +171,15 @@ def showCommitAreaOnline(owner,repoName,commitHash,filePath):
      for line in commit_file_area_data.split('\n'):
           if len(line) == 0 or len(line) == 1:
                 continue
+
+          if('@@' in line and '\"' not in line):
+              deletionArray.append(line)
+              insertionArray.append(line)  
           
-          if (line[0] == '+' and  line[1] == ' ') == False:
+          elif (line[0] == '-'):
                 deletionArray.append(line)
-          if (line[0] == '-' and  line[1] == ' ') == False:
-                insertionArray.append(line)      
+          elif (line[0] == '+') :
+                insertionArray.append(line)
                 
      deletionString = ('\n').join(deletionArray)
      insertionString = ('\n').join(insertionArray)
@@ -233,7 +251,13 @@ def getCommitLOCsOnline(owner,repoName,commitHash, oneFileOnly = False, targetFi
           ##finds non-deleted lines
            deleteLocNumber = int(deleteNums[0][1:]) if (contains_charOnline(deleteNums, '+') and '@@ ' in group[i]) else deleteLocNumber + 1
           if(group[i][0] == '-'):
-           deleteArray.append([deleteLocNumber - 1,group[i]])
+           currentString = ( group[i] + 'n' + group[i+1] )if( isLinebreakWrong(group[i]) ) else  group[i]
+           deleteArray.append([deleteLocNumber - 1 ,currentString])
+          if  isLinebreakWrong(group[i]):
+              deleteLocNumber  = deleteLocNumber - 1
+           #if isLinebreakWrong(group[i]):
+            #   i = i + 1
+           #deleteArray.append([deleteLocNumber - 1,group[i]])
               
       # save all inserted LOCs
       for j in range(len(group)):
@@ -242,9 +266,16 @@ def getCommitLOCsOnline(owner,repoName,commitHash, oneFileOnly = False, targetFi
           insertIndex = index_of_element_with_charOnline(insertNums, '+')
           if(group[j][0] != '-'):
            insertLocNumber  = int(insertNums[insertIndex]) if (contains_charOnline(insertNums, '+') and '@@ ' in group[j]) else insertLocNumber + 1
-           #print('j',j, 'in', deleteNums, 'dln',insertLocNumber)
+           #print('j',j, 'in', deleteNums, 'dln',insertLocNumber, group[j])
           if(group[j][0] == '+'):
-           insertArray.append([insertLocNumber - 1 ,group[j]])
+           currentString =  (group[j] + 'n' + group[j+1]) if ( isLinebreakWrong(group[j]) ) else  group[j]
+           insertArray.append([insertLocNumber - 1 , currentString])
+          if  isLinebreakWrong(group[j]):
+              insertLocNumber  = insertLocNumber - 1
+           #if isLinebreakWrong(group[j]):
+            #   j = j + 1
+           #insertArray.append([insertLocNumber - 1 ,group[j]])
+           
 
       commitChangeLocsDict[file] = ([{'deletedLines':deleteArray,'insertedLines':insertArray}])
       commitDeletionsLocsDict[file] = ([deleteArray])
