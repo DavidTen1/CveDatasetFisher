@@ -25,7 +25,7 @@ style = ttk.Style()
 style.configure('Custom.TEntry', readonlybackground='#FFFFFF')# readonly background stays white
 
 #window size
-master.geometry("750x350")
+master.geometry("350x100")
 master.title('CveDatasetFisher')
 
 repoList = []
