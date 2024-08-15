@@ -4,10 +4,12 @@ from FileManager import *
 from RepoCloner import *
 #Source for this tkinter line: https://www.geeksforgeeks.org/file-explorer-in-python-using-tkinter/
 from tkinter import  ttk
+#git source: https://www.devdungeon.com/content/working-git-repositories-python
 from git import *
 #Source for os: https://www.freecodecamp.org/news/how-to-check-if-a-file-exists-in-python/
 import os
 #Source for use of shutil: https://docs.python.org/3/library/shutil.html
+#Source got subprocess:https://docs.python.org/3/library/subprocess.html
 import subprocess
 import json
 #Source for ast: https://www.geeksforgeeks.org/python-convert-string-dictionary-to-dictionary/
