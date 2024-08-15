@@ -6,6 +6,7 @@ import os
 import shutil
 #Source for subprocess: https://docs.python.org/3/library/subprocess.html
 import subprocess
+#Source for re:https://docs.python.org/3/library/re.html
 import re
 # Source for use of requests:  https://github.com/pedrojunqueira/PytalistaYT/blob/master/Python/requests/download_files.py
 import requests
