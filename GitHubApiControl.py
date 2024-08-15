@@ -4,9 +4,11 @@ from fastcore.all import *
 from ghapi.all import GhApi
 from FileManager import *
 #from RepoCloner import *
+#Source for subprocess:https://docs.python.org/3/library/subprocess.html
 import subprocess
 #Source for os: https://www.freecodecamp.org/news/how-to-check-if-a-file-exists-in-python/
 import os
+#Source for re:https://docs.python.org/3/library/re.html
 import re
 # Source for use of requests:  https://github.com/pedrojunqueira/PytalistaYT/blob/master/Python/requests/download_files.py
 import requests
