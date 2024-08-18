@@ -1,4 +1,4 @@
-#Sources for tkinter : https://www.tutorialspoint.com/how-to-make-the-tkinter-text-widget-read-only (check)
+#Sources for tkinter : https://www.tutorialspoint.com/how-to-make-the-tkinter-text-widget-read-only,https://discuss.python.org/t/tkinter-text-insert/44527 (check)
 from tkinter import *
 from FileManager import *
 from RepoCloner import *
