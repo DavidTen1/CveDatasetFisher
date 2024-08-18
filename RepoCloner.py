@@ -1,14 +1,14 @@
-#Source regarding git lib:https://www.devdungeon.com/content/working-git-repositories-python
+#Source regarding git lib and pull and checkout operation:https://www.devdungeon.com/content/working-git-repositories-python(check)
 import git
-#Source for os: https://www.freecodecamp.org/news/how-to-check-if-a-file-exists-in-python/
+#Source for os: https://www.freecodecamp.org/news/how-to-check-if-a-file-exists-in-python/(check)
 import os
-#Source for use of shutil: https://docs.python.org/3/library/shutil.html
+#Source for use of shutil: https://docs.python.org/3/library/shutil.html(check)
 import shutil
-#Source for subprocess: https://docs.python.org/3/library/subprocess.html
+#Source for subprocess: https://docs.python.org/3/library/subprocess.html(check)
 import subprocess
-#Source for re:https://docs.python.org/3/library/re.html
+#Source for re:https://docs.python.org/3/library/re.html(check)
 import re
-# Source for use of requests:  https://github.com/pedrojunqueira/PytalistaYT/blob/master/Python/requests/download_files.py
+# Source for use of requests:  https://github.com/pedrojunqueira/PytalistaYT/blob/master/Python/requests/download_files.py(check)
 import requests
 from FileManager import *
 from GitHubApiControl import *
