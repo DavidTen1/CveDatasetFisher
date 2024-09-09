@@ -204,37 +204,34 @@ def showCommitArea(commitString, filePath, repoName):
     Returns:
      commitArea(string): shows in which areas the changes took place
     """
-    if isValueString(commitString) and isValueString(filePath):
-     commitHash = commitString.split(" ", 1)[0]
-     absPath = cwd + "\\" +   repoName + '\\'+ filePath.replace('/','\\')
+    commitHash = commitString.split(" ", 1)[0]
+    absPath = cwd + "\\" +   repoName + '\\'+ filePath.replace('/','\\')
      # gets current repo
-     repo = repoUpdater.getRepo()
+    repo = repoUpdater.getRepo()
      #Source for git.show: ChatGPT
-     commitArea = repo.git.show(commitHash,'--',absPath).split('\n')
-     deletionArray = []
-     insertionArray = []
+    commitArea = repo.git.show(commitHash,'--',absPath).split('\n')
+    deletionArray = []
+    insertionArray = []
      
-     for line in commitArea:
-          if len(line) == 0 or len(line) == 1:
+    for line in commitArea:
+        if len(line) == 0 or len(line) == 1:
                 continue
 
 
-          if('@@' in line and '\"' not in line):
+        if('@@' in line and '\"' not in line):
               deletionArray.append(line)
               insertionArray.append(line)  
 
           #add deleted lines to deletion array, inserted ones to the insertion array
-          elif (line[0] == '-'):
+        elif (line[0] == '-'):
                 deletionArray.append(line)
-          elif (line[0] == '+' ):
+        elif (line[0] == '+' ):
                 insertionArray.append(line)      
                 
 
-     insertionString = ('\n').join(insertionArray)
-     deletionString = ('\n').join(deletionArray)
-     return [commitArea,deletionString , insertionString]
-    else:
-     print('Every arg must be a string and must have existing info!')
+    insertionString = ('\n').join(insertionArray)
+    deletionString = ('\n').join(deletionArray)
+    return [commitArea,deletionString , insertionString]
 
 
 #shows only the modified lines
