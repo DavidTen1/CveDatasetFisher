@@ -72,9 +72,6 @@ def doesFileExist(value):
     #Source for os.path.isfile(value): https://www.freecodecamp.org/news/how-to-check-if-a-file-exists-in-python/(check)
     return os.path.isfile(value)
 
-
-
-
 def makeOrIdCVE_Folder(cveID):
     """Creates a CVE root folder if it doesn't exist.
 
@@ -173,29 +170,20 @@ def createOrModCveJSON(cveID, data):
         fileStat = "w" if os.path.exists(file_path) else "x"
         with open(file_path, fileStat) as file:
             json.dump(data, file, ensure_ascii=False, indent=4)
-        #if not os.path.exists(directory):
-        #    os.makedirs(directory)
-        
-        #file_path = os.path.join(directory, cveID + ".json")
-        #if not os.path.exists(file_path):
-        # with open(file_path, "x") as file:
-        #    json.dump(data, file, ensure_ascii=False, indent=4)
-        #if  os.path.exists(file_path):
-        # with open(file_path, "w") as file:
-        #    json.dump(data, file, ensure_ascii=False, indent=4)    
+            
     except Exception as e:
         print(f"Error: {e}")
 
 
 
-#Source: ChatGPT
+#Source: ChatGPT; find char in a string
 def contains_char(array, char):
     for string in array:
         if char in string:
             return True
     return False
 
-#Source: ChatGPT
+#Source: ChatGPT find char's index  in a string
 def index_of_element_with_char(array, char):
     return next((index for index, string in enumerate(array) if char in string), -1)
 

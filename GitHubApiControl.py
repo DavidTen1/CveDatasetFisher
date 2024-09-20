@@ -56,15 +56,7 @@ def prepareFileCommitsOutput(owner,repoName,commitHash):
     Returns:
         [dyn_download_url_prefix ,dyn_output,dyn_commit_groups,dyn_commit_groups_box, dyn_commit_info, dyn_prev_commit_hash, dyn_commit_url](list): contains file download URL prefix by commit, all LOC changes for all files of a commit, the current and previous commit hash each
  """
- #api = GhApi(token= Token)
- #ghauth = GhDeviceAuth()
- #print('ghauth',ghauth.url_docs())
- #user = api.users.get_authenticated()
- #print(user)
- #rate_limit = api.rate_limit.get()
- #print(ghauth.auth())
- #print(rate_limit)
- # replace string enterTokenHere with the actual token, token recognition will be fixed later on.
+
  dyn_commit_info =  api.git.get_commit(owner=owner, repo=repoName, commit_sha=commitHash, token=Token);
  dyn_commit_url = dyn_commit_info['html_url']
  dyn_prev_commit_hash = (dyn_commit_info['parents'][0]['html_url']).rsplit('/')[-1]
@@ -79,8 +71,6 @@ def prepareFileCommitsOutput(owner,repoName,commitHash):
  #dyn_commit_groups = str(subprocess.check_output(dyn_command, shell=True)).split('@@ -')
  dyn_commit_groups = str(subprocess.check_output(dyn_command, shell=True)).split('--git')
  # this list has commit changes of each file appended as one group-like element, which are orderly saved via the for loop
- #dyn_commit_groups_box = dyn_commit_groups.split('--git ')
- #print('dggg', dyn_commit_groups , len(dyn_commit_groups))
  dyn_commit_groups_box = []
  for group in dyn_commit_groups:
   dyn_commit_groups_box.append(group.split('\\n')[4:])
@@ -101,7 +91,6 @@ def getCommitFilesViaUrl(owner,repoName,commitHash):
         commit_files: list of files from a commit
     """
     stdOutput = prepareFileCommitsOutput(owner,repoName,commitHash)[1]
-    #print('std output' , stdOutput)
     
     fileMark = '---' or '+++'
     commit_copy = [file for file in stdOutput if fileMark in file]
@@ -115,20 +104,20 @@ def getCommitFilesViaUrl(owner,repoName,commitHash):
     return commit_files
     
 
-
+# looks for a char in a string
 def contains_charOnline(array, char):
     for string in array:
         if char in string:
             return True
     return False
-
+#returns a char's index in a string
 def index_of_element_with_charOnline(array, char):
     return next((index for index, string in enumerate(array) if char in string), -1)
 
     
 
 def showFileOnline(owner,repoName,commitHash,filePath):
-     """extracts file's entire content and returns it
+     """extracts file's entire content from web and returns it
 
     Args:
        owner(string): name of a Git repo owner
@@ -425,7 +414,6 @@ def finalDownloadOnline(cveID, ownerName,repoName,commitString, fileArrCommitStr
     postFolderDir = makeOrTakePostFolderOnline(cveID)
     targetDir = postFolderDir if usePostFolder == True else preFolderDir
     fileArray = getCommitFilesViaUrl(ownerName,repoName, fileArrCommitHash)
-    #print('fa', getCommitFilesViaUrl(ownerName,repoName, fileArrCommitHash))
     # for loop has commit files download in the respected folder(pre-/post-patch) dependent on version
     
     #save all LOC changes in a JSON

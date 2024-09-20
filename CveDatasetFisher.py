@@ -29,22 +29,23 @@ style.configure('Custom.TEntry', readonlybackground='#FFFFFF')# readonly backgro
 master.geometry("750x300")
 master.title('CveDatasetFisher')
 
-repoList = []
-
 newRepoNameInput = Entry(master)
 
-repoList = []
-for file in allfiles:
- potentialGitPath = cwd + "\\" + file + '\\.git'
- dict = {}
- if (os.path.exists(potentialGitPath)):
-  repoList.append(file)
-  dict[file] = listCurrentRepoHistory(file)
-  reposCommitsList.append(dict)
+
+#original code having filled repo combobox; commented out but for orientation purposes it should not be deleted
+#for file in allfiles:
+# potentialGitPath = cwd + "\\" + file + '\\.git'
+# dict = {}
+# if (os.path.exists(potentialGitPath)):
+#  reposList.append(file)
+#  dict[file] = listCurrentRepoHistory(file)
+#  reposCommitsList.append(dict)
   #self.repobox_values = repoList
+#print('rl', repoList)
+#print('rcl', reposCommitsList)
 
-
-
+  
+    
 
 class ComboboxUpdater:#Source ChatGPT
     def __init__(self):
@@ -54,13 +55,7 @@ class ComboboxUpdater:#Source ChatGPT
         self.nextCommitIndex = 0
         self.prevCommitHash = None
         self.repobox_values = []
-        for file in allfiles:
-         potentialGitPath = cwd + "\\" + file + '\.git'
-         dict = {}
-         if (os.path.exists(potentialGitPath)):
-          self.repobox_values.append(file)
-          dict[file] = listCurrentRepoHistory(file)
-          reposCommitsList.append(dict)
+
         
 
     def update_values(self, repoName):
@@ -204,7 +199,7 @@ class ComboboxUpdater:#Source ChatGPT
         return commitIndexData 
 
 
-# the updaters each update the file and the commit comboboxes
+# the updaters each update the file comboboxes and the commit comboboxes
 combobox_updater = ComboboxUpdater()
 combobox_updater2 = ComboboxUpdater()
 combobox_updater3 = ComboboxUpdater()
@@ -235,7 +230,6 @@ def addOnlineItem():
         if new_item:  # Ensure the entry is not empty
             fileStat = "w" if os.path.exists(cveDownloadsArrFilePath) else "x"
             current_items = list(cveDownloadListCombobox['values'])
-            #print('tt', type(current_items))
             current_items.append(new_item)
             cveDownloadListCombobox['values'] = current_items
             #self.entry.delete(0, tk.END)  # Clear the entry after adding
@@ -310,7 +304,7 @@ def search(event): #Source:GFG
         if str(event.widget) == '.cve':
             cvesLb['values'] = cvesList
         if str(event.widget) == '.repo':
-            reposLb['values'] =  repoList
+            reposLb['values'] =  reposList
         if str(event.widget) ==  '.cveDownloads':
             cvesDownloadListLb['values'] = cveDownloadListCombobox['values']
     else:
@@ -335,7 +329,7 @@ def search(event): #Source:GFG
             if str(event.widget) == '.cve':
                 cvesLb['values'] = data
         if str(event.widget) == '.repo':
-             for item in repoList: 
+             for item in reposList: 
                  if value.lower() in item.lower(): 
                      data.append(item)
                      #print('ccc',data)
@@ -420,7 +414,7 @@ Label(master, text="File directory").grid(row=0) # if only the row index is sele
 Button(master, text='Open file', command=lambda: browseFiles(fileDirInput ) ).grid(row=0, column=2, sticky=W, pady=4)
 Label(master, text="Download repo").grid(row=1) # if only the row index is selected, the default column index will be 0, same will be for the other way around
 Label(master, text="Commit name/hash").grid(row=2)  # if only the row index is selected, the default column index will be 0, same will be for the other way around
-Button(master, text='Clone repo', command=lambda: [repoUpdater.cloneRepo(repoURLInput.get(), newRepoNameInput.get())]  ).grid(row=1, column=11, sticky=W , padx=0,pady=4)
+Button(master, text='Clone repo', command=lambda: [repoUpdater.cloneRepo(repoURLInput.get(), newRepoNameInput.get()), updateReposCommitsInfo(newRepoNameInput.get()) ]  ).grid(row=1, column=11, sticky=W , padx=0,pady=4)
 Button(master, text='Save token', command=save_token).grid(row=3, column=7, sticky=W , padx=0,pady=4)
 
 Label(master, text="Choose repo").grid(row=0, column = 9)
@@ -450,7 +444,7 @@ Button(master, text='Show pre-patch and post-patch  files\' changed areas(online
 Button(master, text='Show  pre-patch and post-patch  files\' changed lines(online)', command=lambda: [ change_prePatchTextBoxContent( (getCommitLOCsOnline( ownerOnlineInput.get() ,repoOnlineInput.get(),commitOnlineInput.get(), True,  fileCombobox.get())[1])[fileCombobox.get()]  )  ,  change_postPatchTextBoxContent((getCommitLOCsOnline( ownerOnlineInput.get() ,repoOnlineInput.get(),commitOnlineInput.get(), True,  fileCombobox.get())[2])[fileCombobox.get()])] ).grid(row=17, column=6, sticky=W+E , padx=0,pady=4)
 
 Button(master, text="Fetch info online", command=lambda: [combobox_updater2.update_onlineFileValues(ownerOnlineInput.get() , repoOnlineInput.get(),commitOnlineInput.get()), combobox_updater2.set_previous_commitHash(ownerOnlineInput.get() , repoOnlineInput.get(),commitOnlineInput.get())    ] ).grid(row=1, column=2, sticky=W+E, padx=0,pady=4)
-Button(master, text='Pull repo', command=lambda: repoUpdater.pullRepo() ).grid(row=1, column=3, sticky=W , padx=0,pady=4)
+Button(master, text='Pull repo', command=lambda: repoUpdater.pullRepo(repoCombobox.get()) ).grid(row=1, column=3, sticky=W , padx=0,pady=4)
 #Combobox source:https://pythonassets.com/posts/drop-down-list-combobox-in-tk-tkinter/
 commitCombobox = ttk.Combobox(master, value=combobox_updater.get_combobox_values(), name='commit')
 combobox_updater.set_combobox(commitCombobox)
@@ -458,7 +452,7 @@ fileCombobox= ttk.Combobox(master, value=combobox_updater2.get_combobox_values()
 combobox_updater2.set_combobox(fileCombobox)
 cveDownloadListCombobox = ttk.Combobox(master, value=cveDownloadArr, name='cveDownloads')
 #repoCombobox = ttk.Combobox(master, value=repoList, name='repo')
-repoCombobox = ttk.Combobox(master, value=repoList, name='repo')
+repoCombobox = ttk.Combobox(master, value=reposList, name='repo')
 combobox_updater3.set_combobox(repoCombobox)
 #ONLY COMPARE CHANGES FROM SAME COMMIT
 
