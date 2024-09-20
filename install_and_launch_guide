@@ -14,12 +14,14 @@ Linux:
 7. Check the version with "python(version number)--version" in the terminal
 
 Installing required external libraries: 
-1. Install the libraries GitPython, ghapi, requests and fastcore each with the CMD command:
+1. Install (if need be) the libraries git,GitPython, ghapi, requests and fastcore each with the CMD command:
 py -m pip install <libraryName>(Windows) or  python -m pip install <libraryName>(Linux)
+Also, at the same time, check if some of the named libs already exist with the info from: https://www.geeksforgeeks.org/how-to-check-if-python-package-is-installed/
+
 2.If you do see an error message while installing a package, search it for the names of packages that are reported to be missing. install them according to the 1st step. Then retry installing the packages
 
 How to launch:
-To launch the CveDatasetFisher application, run the epynomous Python file.
+To launch the CveDatasetFisher application, run the epynomous Python file. If it takes too long for the launch, right-click it and select the Edit with IDLE <Python version number> option. The code will be opened. Then click on the Run dropdown and select Run module(Hotkey F5)
 
 How to generate or update a token:
 https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens
